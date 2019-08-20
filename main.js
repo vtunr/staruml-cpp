@@ -30,7 +30,9 @@ function getGenOptions () {
     indentSpaces: app.preferences.get('cpp.gen.indentSpaces'),
     useVector: app.preferences.get('cpp.gen.useVector'),
     includeHeader: app.preferences.get('cpp.gen.includeHeader'),
-    genCpp: app.preferences.get('cpp.gen.genCpp')
+    genCpp: app.preferences.get('cpp.gen.genCpp'),
+    headerHPP: app.preferences.get('cpp.gen.headerHPP'),
+    pragmaOnce: app.preferences.get('cpp.gen.pragmaOnce')
   }
 }
 

@@ -24,6 +24,18 @@
       "type": "check",
       "default": true
     },
+    "cpp.gen.headerHPP":{
+      "text": "Use *.hpp for header",
+      "description": "Use *.hpp for header",
+      "type": "check",
+      "default": false
+    },    
+    "cpp.gen.pragmaOnce":{
+      "text": "Use #pragma once as include guard",
+      "description": "Use #pragma once as include guard, regular include guard otherwise",
+      "type": "check",
+      "default": false
+    },
     "cpp.gen.useVector": {
       "text": "Use vector instead of *",
       "description": "Use vector<> instead of pointer.",

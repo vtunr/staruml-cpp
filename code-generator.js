@@ -23,6 +23,7 @@
 */
 
 const _CPP_CODE_GEN_H = 'h'
+const _CPP_CODE_GEN_HPP = 'hpp'
 const _CPP_CODE_GEN_CPP = 'cpp'
 
 const path = require('path')
@@ -86,10 +87,14 @@ class CppCodeGenerator {
 
     var getFilePath = (extenstions) => {
       var absPath = basePath + '/' + elem.name + '.'
-      if (extenstions === _CPP_CODE_GEN_H) {
+      if (extenstions == _CPP_CODE_GEN_H) {
         absPath += _CPP_CODE_GEN_H
-      } else {
-        absPath += _CPP_CODE_GEN_CPP
+      } else{
+        if(extenstions == _CPP_CODE_GEN_HPP){
+          absPath += _CPP_CODE_GEN_HPP
+        } else {
+          absPath += _CPP_CODE_GEN_CPP
+        }
       }
       return absPath
     }
@@ -265,7 +270,11 @@ class CppCodeGenerator {
       }
     } else if (elem instanceof type.UMLClass) {
       // generate class header elem_name.h
-      file = getFilePath(_CPP_CODE_GEN_H)
+      if(options.headerHPP){
+        file = getFilePath(_CPP_CODE_GEN_HPP)
+      } else {
+        file = getFilePath(_CPP_CODE_GEN_H)
+      }
       fs.writeFileSync(file, this.writeHeaderSkeletonCode(elem, options, writeClassHeader))
       // generate class cpp elem_name.cpp
       if (options.genCpp) {
@@ -277,11 +286,19 @@ class CppCodeGenerator {
        * interface will convert to class which only contains virtual method and member variable.
        */
       // generate interface header ONLY elem_name.h
-      file = getFilePath(_CPP_CODE_GEN_H)
+      if(options.headerHPP){
+        file = getFilePath(_CPP_CODE_GEN_HPP)
+      } else {
+        file = getFilePath(_CPP_CODE_GEN_H)
+      }
       fs.writeFileSync(file, this.writeHeaderSkeletonCode(elem, options, writeClassHeader))
     } else if (elem instanceof type.UMLEnumeration) {
       // generate enumeration header ONLY elem_name.h
-      file = getFilePath(_CPP_CODE_GEN_H)
+      if(options.headerHPP){
+        file = getFilePath(_CPP_CODE_GEN_HPP)
+      } else {
+        file = getFilePath(_CPP_CODE_GEN_H)
+      }
       fs.writeFileSync(file, this.writeHeaderSkeletonCode(elem, options, writeEnumeration))
     }
   }
@@ -301,8 +318,12 @@ class CppCodeGenerator {
     var includePart = this.getIncludePart(elem)
     codeWriter.writeLine(copyrightHeader)
     codeWriter.writeLine()
-    codeWriter.writeLine('#ifndef ' + headerString)
-    codeWriter.writeLine('#define ' + headerString)
+    if(options.pragmaOnce){
+      codeWriter.writeLine('#pragma once')
+    } else {
+      codeWriter.writeLine('#ifndef ' + headerString)
+      codeWriter.writeLine('#define ' + headerString)
+    }
     codeWriter.writeLine()
 
     if (includePart.length > 0) {
@@ -312,7 +333,9 @@ class CppCodeGenerator {
     funct(codeWriter, elem, this)
 
     codeWriter.writeLine()
-    codeWriter.writeLine('#endif //' + headerString)
+    if(!options.pragmaOnce){
+      codeWriter.writeLine('#endif //' + headerString)
+    }
     return codeWriter.getData()
   }
 
