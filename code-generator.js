@@ -111,14 +111,19 @@ class CppCodeGenerator {
 
     var writeClassHeader = (codeWriter, elem, cppCodeGen) => {
       var i
-      var write = (items) => {
+      var write = (items, className) => {
         var i
         for (i = 0; i < items.length; i++) {
           var item = items[i]
           if (item instanceof type.UMLAttribute || item instanceof type.UMLAssociationEnd) { // if write member variable
             codeWriter.writeLine(cppCodeGen.getMemberVariable(item))
           } else if (item instanceof type.UMLOperation) { // if write method
-            codeWriter.writeLine(cppCodeGen.getMethod(item, false))
+            console.log(className)
+            if(item.name == className){
+              codeWriter.writeLine(cppCodeGen.getMethod(item, false, true))
+            } else {
+              codeWriter.writeLine(cppCodeGen.getMethod(item, false, false))
+            }
           } else if (item instanceof type.UMLClass) {
             writeClassHeader(codeWriter, item, cppCodeGen)
           } else if (item instanceof type.UMLEnumeration) {
@@ -183,19 +188,19 @@ class CppCodeGenerator {
       if (classfiedAttributes._public.length > 0) {
         codeWriter.writeLine('public: ')
         codeWriter.indent()
-        write(classfiedAttributes._public)
+        write(classfiedAttributes._public, elem.name)
         codeWriter.outdent()
       }
       if (classfiedAttributes._protected.length > 0) {
         codeWriter.writeLine('protected: ')
         codeWriter.indent()
-        write(classfiedAttributes._protected)
+        write(classfiedAttributes._protected, elem.name)
         codeWriter.outdent()
       }
       if (classfiedAttributes._private.length > 0) {
         codeWriter.writeLine('private: ')
         codeWriter.indent()
-        write(classfiedAttributes._private)
+        write(classfiedAttributes._private, elem.name)
         codeWriter.outdent()
       }
 
@@ -209,7 +214,9 @@ class CppCodeGenerator {
         for (i = 0; i < elemList._public.length; i++) {
           item = elemList._public[i]
           if (item instanceof type.UMLOperation) { // if write method
-            codeWriter.writeLine(cppCodeGen.getMethod(item, true))
+            console.log(item)
+            console.log(elem.name)
+            codeWriter.writeLine(cppCodeGen.getMethod(item, true, item.name == elem.name))
           } else if (item instanceof type.UMLClass) {
             writeClassBody(codeWriter, item, cppCodeGen)
           }
@@ -218,7 +225,7 @@ class CppCodeGenerator {
         for (i = 0; i < elemList._protected.length; i++) {
           item = elemList._protected[i]
           if (item instanceof type.UMLOperation) { // if write method
-            codeWriter.writeLine(cppCodeGen.getMethod(item, true))
+            codeWriter.writeLine(cppCodeGen.getMethod(item, true, item.name == elem.name))
           } else if (item instanceof type.UMLClass) {
             writeClassBody(codeWriter, item, cppCodeGen)
           }
@@ -227,7 +234,7 @@ class CppCodeGenerator {
         for (i = 0; i < elemList._private.length; i++) {
           item = elemList._private[i]
           if (item instanceof type.UMLOperation) { // if write method
-            codeWriter.writeLine(cppCodeGen.getMethod(item, true))
+            codeWriter.writeLine(cppCodeGen.getMethod(item, true, item.name == elem.name))
           } else if (item instanceof type.UMLClass) {
             writeClassBody(codeWriter, item, cppCodeGen)
           }
@@ -535,7 +542,7 @@ class CppCodeGenerator {
    * @param {boolean} isCppBody
    * @return {Object} string
    */
-  getMethod (elem, isCppBody) {
+  getMethod (elem, isCppBody, isConstructor) {
     if (elem.name.length > 0) {
       var docs = elem.documentation
       var i
@@ -560,8 +567,9 @@ class CppCodeGenerator {
         inputParamStrings.push(this.getType(inputParam) + ' ' + inputParam.name)
         docs += '\n@param ' + inputParam.name
       }
-
-      methodStr += ((returnTypeParam.length > 0) ? this.getType(returnTypeParam[0]) : 'void') + ' '
+      if(!isConstructor){
+        methodStr += ((returnTypeParam.length > 0) ? this.getType(returnTypeParam[0]) : 'void') + ' '
+      }
 
       if (isCppBody) {
         var telem = elem
